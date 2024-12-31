@@ -1,0 +1,83 @@
+module ethernet_top (
+    input CLK,                   // Reloj de entrada
+    input RST_N,                 // Reset activo bajo
+    inout [1:0] ETH_RXD,         // Datos de recepción
+    input ETH_RXERR,             // Error de recepción
+    input ETH_CRSDV,             // Señal de portadora y datos válidos
+    output wire ETH_TXEN,        // Habilitación de transmisión
+    output wire [1:0] ETH_TXD,   // Datos de transmisión
+    output wire ETH_RSTN,        // Reset del PHY (activo bajo)
+    inout ETH_MDIO,              // Línea MDIO (bidireccional)
+    output wire ETH_MDC,         // Reloj MDC
+    output wire ETH_INTN         // Interrupción (si es necesario)
+);
+
+    // Definición de señales internas
+    reg [1:0] txd_reg;      // Registro para los datos de transmisión TXD
+    reg txen_reg;           // Registro para habilitar la transmisión (TXEN)
+    reg crsdv_reg;          // Señal para portadora y datos válidos (CRS_DV)
+    reg [1:0] rxd_reg;      // Registro para los datos de recepción RXD
+    reg rxerr_reg;          // Registro para el error de recepción (RXERR)
+    
+    // Control de transmisión (TX) y recepción (RX)
+    always @(posedge CLK or negedge RST_N) begin
+        if (~RST_N) begin
+            txd_reg <= 2'b00;
+            txen_reg <= 0;
+            crsdv_reg <= 0;
+            rxd_reg <= 2'b00;
+            rxerr_reg <= 0;
+        end else begin
+            // Lógica de transmisión (TX)
+            if (ETH_TXEN) begin
+                txd_reg <= ETH_TXD;       // Cargar datos en TXD para transmisión
+                txen_reg <= 1;            // Habilitar transmisión
+            end else begin
+                txen_reg <= 0;            // Deshabilitar transmisión
+            end
+
+            // Lógica de recepción (RX)
+            if (ETH_CRSDV) begin
+                rxd_reg <= ETH_RXD;      // Leer los datos de RXD
+                rxerr_reg <= ETH_RXERR;  // Leer el error de recepción
+            end
+
+            // Lógica de CRS/DV
+            if (ETH_CRSDV) begin
+                crsdv_reg <= 1;           // Indicar que hay datos válidos en RXD
+            end else begin
+                crsdv_reg <= 0;           // No hay datos válidos
+            end
+        end
+    end
+
+    // Asignación de las señales de salida
+    assign ETH_TXD = txd_reg;   // Asignar datos de transmisión a la salida ETH_TXD
+    assign ETH_TXEN = txen_reg; // Habilitar la transmisión si txen_reg está alto
+    assign ETH_CRSDV = crsdv_reg; // Señal CRS_DV controlada por crsdv_reg
+
+    assign ETH_RSTN = RST_N;    // Controlar el reset del PHY (invertido por lo general)
+
+    // Lógica de MDIO y MDC (comunicación con el PHY para configuración)
+    reg mdio_out_reg;
+    reg mdc_reg;
+    assign ETH_MDIO = (mdio_out_reg) ? 1'bz : 1'b0; // MDIO es bidireccional
+
+    always @(posedge CLK or negedge RST_N) begin
+        if (~RST_N) begin
+            mdc_reg <= 0;
+            mdio_out_reg <= 0;
+        end else begin
+            // Lógica para manejar MDC y MDIO
+            mdc_reg <= ~mdc_reg;  // Oscilar el reloj MDC para la comunicación MDIO
+            mdio_out_reg <= 0;    // Configuración simple de MDIO (puedes modificar esto)
+        end
+    end
+
+    assign ETH_MDC = mdc_reg;  // Enviar el reloj MDC
+
+    // Simulación de interrupción o reloj de referencia (nINT/REFCLKO)
+    assign ETH_INTN = 1'b0; // Esta señal puede ser utilizada para generar interrupciones si es necesario
+
+endmodule
+

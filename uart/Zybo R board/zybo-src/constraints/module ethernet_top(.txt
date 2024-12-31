@@ -1,0 +1,27 @@
+module ethernet_top(
+    input CLK,
+    input RST_N,
+    output ETH_MDC,
+    inout ETH_MDIO,
+    output ETH_RSTN,
+    inout ETH_CRSDV,
+    input ETH_RXERR,
+    inout [1:0] ETH_RXD,
+    output ETH_TXEN,
+    output [1:0] ETH_TXD,
+    output ETH_REFCLK,
+    input ETH_INTN
+    );
+
+input                        clk,
+    input                        rst,
+
+    input [WORD_BYTES*8-1:0]     s_axis_tdata,
+    input                        s_axis_tvalid,
+    input                        s_axis_tlast,
+    output                       s_axis_tready,
+
+
+    output logic                 tx_en,
+    output logic [MII_WIDTH-1:0] txd
+    );
