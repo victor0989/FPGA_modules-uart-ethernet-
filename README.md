@@ -3,6 +3,10 @@ This repository contains VHDL modules for FPGA development, focusing on UART, Et
 
 This project is designed for testing algorithms and signal processing, providing a collection of small projects and ideas for signal processing and peripheral interfacing. The modules can be extended to include automotive and aerospace protocols for further testing and integration.
 
+# PlatformIO(STM32learning)
+
+https://docs.platformio.org/en/stable/tutorials/espressif32/arduino_debugging_unit_testing.html#
+
 ## Module Examples  
 
 ### 1. UART Module  
